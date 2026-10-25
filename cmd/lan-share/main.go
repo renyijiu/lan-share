@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
@@ -68,7 +67,7 @@ func main() {
 	defer a.controller.Stop()
 	mygo.App.SetMenu(mygo.NewMenu([]*mygo.MenuItem{{Role: mygo.RoleAppMenu}, {Role: mygo.RoleEditMenu}, {Role: mygo.RoleWindowMenu}}))
 	mygo.App.WhenReady(func() {
-		a.win = mygo.NewWindow(mygo.WindowOptions{Title: "LAN Share · 局域网共享", Width: 740, Height: 750, MinWidth: 620, MinHeight: 620, Content: ui.View(a.view)})
+		a.win = mygo.NewWindow(mygo.WindowOptions{Title: "LAN Share", Width: 600, Height: 760, MinWidth: 520, MinHeight: 560, TitleBarStyle: mygo.TitleBarHidden, Content: ui.View(a.view)})
 		a.win.OnClose(func(e *mygo.CloseEvent) {
 			if !a.quitReady {
 				e.PreventDefault()
@@ -284,139 +283,4 @@ func (a *application) quit() {
 		a.controller.Stop()
 		a.win.Update(func() { a.quitReady = true; mygo.App.Quit() })
 	}()
-}
-
-func (a *application) view(c *ui.Context) {
-	theme := *c.Theme()
-	theme.Accent = ui.Hex("#147d75")
-	theme.Radius = 8
-	c.SetTheme(&theme)
-	t := c.Theme()
-	running := a.snapshot.State == smbserver.Running
-	locked := running || a.action != "" || a.snapshot.State == smbserver.Stopping || a.quitting
-	ui.Scroll(c).Fill().Padding(28).Gap(20).Background(t.Background).Children(func() {
-		ui.Row(c).Gap(14).Children(func() {
-			ui.Box(c).Size(48, 48).Radius(13).Background(t.Accent).Center().Children(func() { ui.Text(c, "LAN").FontSize(15).Bold().TextColor(ui.Hex("#ffffff")) })
-			ui.Column(c).Grow(1).Gap(3).Children(func() {
-				ui.Text(c, "局域网共享").FontSize(25).Bold()
-				ui.Text(c, "把电脑上的文件分享给投影仪").TextColor(t.TextMuted)
-			})
-			ui.Text(c, "v"+version).FontSize(12).TextColor(t.TextMuted)
-		})
-		ui.Column(c).Padding(20).Gap(10).Radius(12).Background(t.Surface).Border(1, t.Border).Children(func() {
-			label, color := "尚未启动", t.TextMuted
-			if running {
-				label, color = "共享中", ui.Hex("#14856a")
-			}
-			if a.action == "starting" || a.snapshot.State == smbserver.Starting {
-				label, color = "正在启动…", t.Accent
-			}
-			if a.action == "stopping" || a.snapshot.State == smbserver.Stopping {
-				label = "正在停止…"
-			}
-			if a.snapshot.State == smbserver.Failed {
-				label, color = "启动未完成", t.Danger
-			}
-			ui.Row(c).Gap(8).Children(func() {
-				ui.Box(c).Size(8, 8).Radius(4).Background(color)
-				ui.Text(c, label).Bold().TextColor(color)
-				ui.Spacer(c)
-				ui.Text(c, "SMB · 只读共享").FontSize(12).TextColor(t.TextMuted)
-			})
-			if running {
-				ui.Textf(c, "%d 个连接 · 停止共享将断开正在播放的设备", a.snapshot.Connections).FontSize(12).TextColor(t.TextMuted)
-			} else {
-				ui.Text(c, "选择文件夹并设置登录信息，然后启动共享。").FontSize(12).TextColor(t.TextMuted)
-			}
-		})
-		ui.Column(c).Gap(10).Children(func() {
-			ui.Text(c, "共享文件夹").Bold()
-			ui.Row(c).Gap(10).Children(func() {
-				ui.TextInput(c.Key("folder"), &a.settings.Folder).ReadOnly(true).Placeholder("尚未选择文件夹").Label("共享文件夹路径").Grow(1).Height(40)
-				if ui.Button(c.Key("choose-folder"), "选择文件夹…").Height(40).Disabled(locked).Clicked() {
-					a.pickFolder()
-				}
-			})
-			ui.Text(c, "共享名 Media · 投影仪只能浏览和读取文件").FontSize(12).TextColor(t.TextMuted)
-		})
-		ui.Column(c).Gap(12).Children(func() {
-			ui.Row(c).Gap(16).AlignItems(ui.Start).Children(func() {
-				ui.Field(c, "用户名", func() { ui.TextInput(c.Key("username"), &a.settings.Username).Disabled(locked).Height(40) }).Width(210)
-				ui.Field(c, "密码", func() {
-					ui.Row(c).Gap(8).Children(func() {
-						p := ui.TextInput(c.Key("password"), &a.password).Disabled(locked).Grow(1).Height(40)
-						if !a.showPassword {
-							p.Password()
-						}
-						label := "显示"
-						if a.showPassword {
-							label = "隐藏"
-						}
-						if ui.Button(c.Key("show-password"), label).Height(40).Clicked() {
-							a.showPassword = !a.showPassword
-						}
-					})
-				}).Grow(1)
-			})
-			ui.Checkbox(c.Key("remember-password"), &a.settings.RememberPassword, "记住密码（保存在系统凭据存储中）").Disabled(locked)
-		})
-		ui.Row(c).Gap(10).Children(func() {
-			if a.action == "starting" || a.snapshot.State == smbserver.Starting {
-				if ui.Button(c.Key("cancel-start"), "取消启动").Height(42).Width(140).Clicked() {
-					a.stop()
-				}
-			} else if running {
-				if ui.Button(c.Key("stop"), "停止共享").Height(42).Width(140).Disabled(a.action != "").Clicked() {
-					a.stop()
-				}
-			} else {
-				if ui.PrimaryButton(c.Key("start"), "启动共享").Height(42).Width(140).Disabled(locked).Clicked() {
-					a.start()
-				}
-			}
-			if ui.Button(c.Key("save"), "保存设置").Height(42).Disabled(locked).Clicked() {
-				a.save()
-			}
-			ui.Spacer(c)
-			if ui.Button(c.Key("logs"), "诊断日志").Height(42).Clicked() {
-				go mygo.Shell.OpenPath(filepath.Join(a.dir, "logs"))
-			}
-		})
-		message := a.message
-		isError := a.messageError
-		if message == "" && a.snapshot.Error != "" {
-			message = a.snapshot.Error
-			isError = true
-		}
-		if message != "" {
-			color := t.Accent
-			if isError {
-				color = t.Danger
-			}
-			ui.Text(c, message).TextColor(color).FontSize(13)
-		}
-		ui.Divider(c)
-		ui.Column(c).Gap(10).Children(func() {
-			ui.Text(c, "在投影仪上连接").Bold()
-			ui.Text(c, "接入同一局域网，在资源管理器中添加地址，填写上面的账号密码。").FontSize(12).TextColor(t.TextMuted)
-			if len(a.addresses) == 0 {
-				ui.Text(c, "未找到局域网地址，请连接 Wi-Fi 或以太网。").TextColor(t.TextMuted)
-			}
-			for _, address := range a.addresses {
-				ui.Row(c.Key(address)).Gap(8).Children(func() {
-					ui.Text(c, address).FontSize(14).Grow(1).Selectable()
-					if ui.Button(c, "复制").Label("复制 " + address).Clicked() {
-						mygo.Clipboard.WriteText(address)
-						a.message = "连接地址已复制"
-						a.messageError = false
-					}
-				})
-			}
-		})
-		hint := "退出应用会停止共享；运行期间请保持电脑唤醒。"
-		if runtime.GOOS == "darwin" {
-			hint += "启动时 macOS 可能请求端口授权。"
-		}
-		ui.Text(c, hint).FontSize(12).TextColor(t.TextMuted)
-	})
 }
