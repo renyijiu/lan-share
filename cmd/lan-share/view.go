@@ -90,12 +90,14 @@ func card(c *ui.Context, p palette) ui.Element {
 		InsetShadow(0, 0, 0, 1, p.edge)
 }
 
-func sectionTitle(c *ui.Context, s string) {
-	ui.Text(c, s).FontSize(12).FontWeight(600).TextColor(c.Theme().TextMuted).Padding(0, 4)
-}
-
-func footnote(c *ui.Context, s string) {
-	ui.Text(c, s).FontSize(12).LineHeight(1.45).TextColor(c.Theme().TextMuted).Padding(0, 4)
+// section is a titled group of settings with a note below it.
+func section(c *ui.Context, title, note string, body func()) {
+	t := c.Theme()
+	ui.Column(c).Gap(8).Children(func() {
+		ui.Text(c, title).FontSize(12).FontWeight(600).TextColor(t.TextMuted).Padding(0, 4)
+		body()
+		ui.Text(c, note).FontSize(12).LineHeight(1.45).TextColor(t.TextMuted).Padding(0, 4)
+	})
 }
 
 // iconButton is a small borderless button showing only an icon, named by
@@ -186,13 +188,52 @@ func perforation(c *ui.Context, p palette) {
 	})
 }
 
+// shareState is what the share is doing, as the window shows it.
+type shareState struct {
+	running, starting, stopping bool
+	// locked keeps the settings from changing while the share runs or
+	// another action is under way.
+	locked bool
+}
+
+func (a *application) state() shareState {
+	s := shareState{
+		running:  a.snapshot.State == smbserver.Running,
+		starting: a.action == "starting" || a.snapshot.State == smbserver.Starting,
+		stopping: a.action == "stopping" || a.snapshot.State == smbserver.Stopping,
+	}
+	s.locked = s.running || a.action != "" || a.snapshot.State == smbserver.Stopping || a.quitting
+	return s
+}
+
+// status returns the lamp's tone and the ticket's headline and detail.
+func (a *application) status(s shareState) (tone, string, string) {
+	switch {
+	case a.snapshot.State == smbserver.Failed:
+		return toneFailed, "启动未完成", "请查看下方提示后重试。"
+	case s.starting:
+		if runtime.GOOS == "darwin" {
+			return toneBusy, "正在启动…", "macOS 可能会请求端口授权。"
+		}
+		return toneBusy, "正在启动…", "正在打开 445 端口。"
+	case s.stopping:
+		return toneBusy, "正在停止…", "正在断开已连接的设备。"
+	case s.running:
+		if n := a.snapshot.Connections; n > 0 {
+			return toneLive, "正在共享", fmt.Sprintf("%d 台设备已连接，停止共享会中断播放。", n)
+		}
+		return toneLive, "正在共享", "等待投影仪连接。"
+	case a.settings.Folder == "":
+		return toneIdle, "未在共享", "先选择要共享的文件夹。"
+	}
+	return toneIdle, "未在共享", "准备就绪，启动后投影仪即可访问。"
+}
+
 func (a *application) view(c *ui.Context) {
 	t, p := applyTheme(c)
-	running := a.snapshot.State == smbserver.Running
-	starting := a.action == "starting" || a.snapshot.State == smbserver.Starting
-	stopping := a.action == "stopping" || a.snapshot.State == smbserver.Stopping
-	locked := running || a.action != "" || a.snapshot.State == smbserver.Stopping || a.quitting
-
+	s := a.state()
+	// Confirmations show as toasts; errors stay in the notice until the
+	// next action clears them.
 	if a.message != "" && !a.messageError {
 		c.Toast(a.message)
 		a.message = ""
@@ -203,45 +244,25 @@ func (a *application) view(c *ui.Context) {
 		ui.Row(c).Height(max(bar.Height, 40)).Padding(0, side).DragWindow().Children(func() {
 			ui.Text(c, "LAN Share").FontSize(13).FontWeight(600).TextColor(t.TextMuted).Grow(1).TextAlign(ui.Center)
 		})
-		ui.Scroll(c).Grow(1).Padding(2, 24, 22, 24).Gap(10).Children(func() {
-			a.ticket(c, p, running, starting, stopping, locked)
-			a.notice(c)
-			ui.Box(c).Height(8)
-			sectionTitle(c, "共享文件夹")
-			a.folderCard(c, p, locked)
-			footnote(c, "以共享名 Media 只读共享，投影仪只能浏览和播放，无法修改或删除文件。")
-			ui.Box(c).Height(8)
-			sectionTitle(c, "登录信息")
-			a.loginCard(c, p, locked)
-			footnote(c, "投影仪连接时填写这组用户名和密码。记住密码后，密码保存在系统凭据存储中。")
-			ui.Box(c).Height(10)
-			a.footer(c, p, locked)
+		ui.Scroll(c).Grow(1).Padding(2, 24, 22, 24).Gap(20).Children(func() {
+			ui.Column(c).Gap(10).Children(func() {
+				a.ticket(c, p, s)
+				a.notice(c)
+			})
+			section(c, "共享文件夹", "以共享名 Media 只读共享，投影仪只能浏览和播放，无法修改或删除文件。", func() {
+				a.folderCard(c, p, s.locked)
+			})
+			section(c, "登录信息", "投影仪连接时填写这组用户名和密码。记住密码后，密码保存在系统凭据存储中。", func() {
+				a.loginCard(c, p, s.locked)
+			})
+			a.footer(c, p, s.locked)
 		})
 	})
 }
 
-func (a *application) ticket(c *ui.Context, p palette, running, starting, stopping, locked bool) {
+func (a *application) ticket(c *ui.Context, p palette, s shareState) {
 	t := c.Theme()
-	k, title, detail := toneIdle, "未在共享", "准备就绪，启动后投影仪即可访问。"
-	if a.settings.Folder == "" {
-		detail = "先选择要共享的文件夹。"
-	}
-	switch {
-	case a.snapshot.State == smbserver.Failed:
-		k, title, detail = toneFailed, "启动未完成", "请查看下方提示后重试。"
-	case starting:
-		k, title, detail = toneBusy, "正在启动…", "正在打开 445 端口。"
-		if runtime.GOOS == "darwin" {
-			detail = "macOS 可能会请求端口授权。"
-		}
-	case stopping:
-		k, title, detail = toneBusy, "正在停止…", "正在断开已连接的设备。"
-	case running:
-		k, title, detail = toneLive, "正在共享", "等待投影仪连接。"
-		if n := a.snapshot.Connections; n > 0 {
-			detail = fmt.Sprintf("%d 台设备已连接，停止共享会中断播放。", n)
-		}
-	}
+	k, title, detail := a.status(s)
 	card(c, p).Children(func() {
 		ui.Row(c).Padding(18, 20, 16, 18).Gap(14).Children(func() {
 			beacon(c, k, p)
@@ -250,16 +271,16 @@ func (a *application) ticket(c *ui.Context, p palette, running, starting, stoppi
 				ui.Text(c, detail).FontSize(12.5).TextColor(t.TextMuted)
 			})
 			switch {
-			case starting:
+			case s.starting:
 				if ui.Button(c.Key("cancel-start"), "取消启动").Height(32).Padding(0, 16).Clicked() {
 					a.stop()
 				}
-			case running:
+			case s.running:
 				if ui.Button(c.Key("stop"), "停止共享").Height(32).Padding(0, 16).Disabled(a.action != "").Clicked() {
 					a.stop()
 				}
 			default:
-				if ui.PrimaryButton(c.Key("start"), "启动共享").Height(32).Padding(0, 18).FontWeight(600).Disabled(locked).Clicked() {
+				if ui.PrimaryButton(c.Key("start"), "启动共享").Height(32).Padding(0, 18).FontWeight(600).Disabled(s.locked).Clicked() {
 					a.start()
 				}
 			}
@@ -401,22 +422,24 @@ func (a *application) loginCard(c *ui.Context, p palette, locked bool) {
 
 func (a *application) footer(c *ui.Context, p palette, locked bool) {
 	t := c.Theme()
-	ui.Row(c).Gap(8).Children(func() {
-		if ui.Button(c.Key("save"), "保存设置").Height(30).Padding(0, 14).Background(p.card).Disabled(locked).Clicked() {
-			a.save()
-		}
-		ui.Spacer(c)
-		logs := ui.Button(c.Key("logs"), "").Height(30).Padding(0, 12).Gap(6).Background(p.card).Children(func() {
-			ui.Icon(c, logIcon).FontSize(15).TextColor(t.TextMuted)
-			ui.Text(c, "诊断日志").SingleLine()
-		})
-		if logs.Clicked() {
-			go mygo.Shell.OpenPath(filepath.Join(a.dir, "logs"))
-		}
-	})
 	hint := "退出应用会停止共享，共享期间请保持电脑唤醒。"
 	if runtime.GOOS == "darwin" {
 		hint += "启动时 macOS 可能请求 445 端口授权，需要输入的是 Mac 管理员密码。"
 	}
-	ui.Text(c, hint+"  v"+version).FontSize(11.5).LineHeight(1.45).TextColor(t.TextMuted.Alpha(0.85)).Padding(4, 4, 0, 4)
+	ui.Column(c).Gap(10).Children(func() {
+		ui.Row(c).Gap(8).Children(func() {
+			if ui.Button(c.Key("save"), "保存设置").Height(30).Padding(0, 14).Background(p.card).Disabled(locked).Clicked() {
+				a.save()
+			}
+			ui.Spacer(c)
+			logs := ui.Button(c.Key("logs"), "").Height(30).Padding(0, 12).Gap(6).Background(p.card).Children(func() {
+				ui.Icon(c, logIcon).FontSize(15).TextColor(t.TextMuted)
+				ui.Text(c, "诊断日志").SingleLine()
+			})
+			if logs.Clicked() {
+				go mygo.Shell.OpenPath(filepath.Join(a.dir, "logs"))
+			}
+		})
+		ui.Text(c, hint+"  v"+version).FontSize(11.5).LineHeight(1.45).TextColor(t.TextMuted.Alpha(0.85)).Padding(0, 4)
+	})
 }

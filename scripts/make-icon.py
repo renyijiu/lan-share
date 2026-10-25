@@ -24,6 +24,12 @@ CORNER, CORNER_EXP = 270.0, 3.0
 LENS = (312.0, 704.0)
 SCREEN = (478.0, 262.0, 846.0, 502.0)  # left, top, right, bottom
 SCREEN_RADIUS = 14.0
+# The beam spreads from the lens to the screen's far corners.
+BEAM_TRI = (LENS, (SCREEN[0] + 10, SCREEN[1] + 6), (SCREEN[2] - 6, SCREEN[3] - 10))
+# The picture on the screen, clipped to it.
+SUN_AT, SUN_RADIUS = (566.0, 334.0), 30.0
+HILL_FAR_TRI = ((548.0, 540.0), (668.0, 384.0), (808.0, 540.0))
+HILL_NEAR_TRI = ((660.0, 540.0), (762.0, 420.0), (880.0, 540.0))
 
 
 def clamp(v, lo=0.0, hi=1.0):
@@ -88,12 +94,6 @@ HILL_FAR, HILL_NEAR = hexc("#eba04a"), hexc("#d27e27")
 HOUSING_TOP, HOUSING_BOTTOM = hexc("#544a40"), hexc("#2a241f")
 GLASS_CORE, GLASS_EDGE = hexc("#fff4da"), hexc("#ee9a35")
 GAP = hexc("#120f0d")
-
-# The beam spreads from the lens to the screen's far corners.
-BEAM_TRI = (LENS, (SCREEN[0] + 10, SCREEN[1] + 6), (SCREEN[2] - 6, SCREEN[3] - 10))
-HILL_FAR_TRI = ((548.0, 540.0), (668.0, 384.0), (808.0, 540.0))
-HILL_NEAR_TRI = ((660.0, 540.0), (762.0, 420.0), (880.0, 540.0))
-SUN_AT, SUN_RADIUS = (566.0, 334.0), 30.0
 
 
 def over(dst, color, alpha):
