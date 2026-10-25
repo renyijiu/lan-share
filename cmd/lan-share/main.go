@@ -67,7 +67,7 @@ func main() {
 	defer a.controller.Stop()
 	mygo.App.SetMenu(mygo.NewMenu([]*mygo.MenuItem{{Role: mygo.RoleAppMenu}, {Role: mygo.RoleEditMenu}, {Role: mygo.RoleWindowMenu}}))
 	mygo.App.WhenReady(func() {
-		a.win = mygo.NewWindow(mygo.WindowOptions{Title: "LAN Share", Width: 600, Height: 760, MinWidth: 520, MinHeight: 560, TitleBarStyle: mygo.TitleBarHidden, Content: ui.View(a.view)})
+		a.win = mygo.NewWindow(mygo.WindowOptions{Title: "LAN Share", Width: 600, Height: 700, MinWidth: 520, MinHeight: 560, TitleBarStyle: mygo.TitleBarHidden, Content: ui.View(a.view)})
 		a.win.OnClose(func(e *mygo.CloseEvent) {
 			if !a.quitReady {
 				e.PreventDefault()
