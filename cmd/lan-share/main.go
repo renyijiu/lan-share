@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -18,7 +19,8 @@ import (
 	"local/lan-share/internal/smbserver"
 )
 
-const version = "0.1.0"
+// Production builds set this from VERSION or the release tag with -ldflags.
+var version = "dev"
 
 type application struct {
 	win          *mygo.Window
@@ -42,6 +44,10 @@ type application struct {
 }
 
 func main() {
+	if len(os.Args) == 2 && os.Args[1] == "--version" {
+		fmt.Println(version)
+		return
+	}
 	mygo.App.SetName("LAN Share")
 	mygo.App.SetVersion(version)
 	if !mygo.App.RequestSingleInstanceLock() {

@@ -1,10 +1,10 @@
-# LAN Share 0.1.0
+# LAN Share
 
 MyGo 纯 Go UI 的跨平台 SMB 桌面工具。首版面向 macOS，复用已在极米 NEW Z8X 自带资源管理器验证过的 `go-filesystems/smb v0.7.0`。不依赖 macOS 文件共享服务。
 
 ## 使用
 
-1. 打开构建生成的 `dist/LAN Share.app`，选择希望共享的媒体文件夹。
+1. 从 [GitHub Releases](https://github.com/renyijiu/lan-share/releases) 下载对应平台压缩包，或按下文自行构建。macOS 打开 `LAN Share.app`，Windows 打开 `lan-share.exe`，Linux 运行 `./lan-share`，选择希望共享的媒体文件夹。
 2. 设置 SMB 用户名和密码。默认用户名为 `projector`，未记住密码时每次打开应用会生成新密码；点击“显示”可查看，也可以自行输入。
 3. 可选“记住密码”，使用系统凭据存储。点击“保存设置”或“启动共享”时保存。
 4. 点击“启动共享”。若当前 macOS 要求 445 端口权限，会出现系统管理员授权窗口。这里输入的是 Mac 管理员密码，与投影仪使用的 SMB 密码不同。
@@ -37,15 +37,16 @@ GUI 和文件读取都以当前用户身份运行。一个独立的纯 Go 小程
 
 ## 开发和构建
 
-依赖固定为 MyGo v0.6.3、SMB v0.7.0；Go 1.27.2，无需 Node/Bun。macOS 构建需要 Command Line Tools 中的 `lipo`、`codesign`、`ditto`。
+依赖固定为 MyGo v0.6.3、SMB v0.7.0；Go 版本以 `go.mod` 为准，目前为 1.27.2。打包使用 Python 3.11+，无需 Node/Bun。macOS 打包需要在 Mac 上运行，并安装 Command Line Tools 中的 `lipo`、`codesign`、`ditto`。
 
 ```sh
 go test -race ./...
 go vet ./...
+python3 -m unittest discover -s scripts -p 'test_*.py'
 sh scripts/build-macos.sh
 ```
 
-脚本默认输出到项目内的 `dist/` 目录（已加入 Git 忽略规则），生成 Apple Silicon + Intel 通用应用和 ZIP。也可以指定输出目录：
+脚本默认输出到项目内的 `dist/` 目录（已加入 Git 忽略规则），生成 Apple Silicon + Intel 通用应用和带版本号的 ZIP。也可以指定输出目录：
 
 ```sh
 sh scripts/build-macos.sh /absolute/output/directory
@@ -59,14 +60,48 @@ go run ./cmd/lan-share
 
 `go run` 的临时目录没有端口助手，因此实际 445 授权测试应使用完整 `.app`。`LAN_SHARE_DATA_DIR` 可指定隔离的测试配置目录，凭据服务名称也会隔离。开发过程中不会自动启动共享。
 
-Windows/Linux 保持独立的平台端口实现，Go SMB 核心不依赖 GUI：
+Windows/Linux 保持独立的平台端口实现，Go SMB 核心不依赖 GUI。统一打包脚本可以在 macOS、Windows 或 Linux 上交叉构建这两个平台：
 
 ```sh
-CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -tags mygo_noinspector -ldflags '-s -w -H=windowsgui' -o build/lan-share.exe ./cmd/lan-share
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -tags mygo_noinspector -ldflags '-s -w' -o build/lan-share-linux ./cmd/lan-share
+python3 scripts/build.py --platform windows
+python3 scripts/build.py --platform linux
 ```
 
+Windows 中可把 `python3` 换成 `python`。本地构建默认使用 `VERSION` 文件，也可以传 `--version 0.2.0`；版本号会写入应用界面和框架元数据。`go run` 使用 `dev` 版本。所有发布二进制使用 `CGO_ENABLED=0`；竞态测试需要系统 C 编译器。
+
 Windows 的系统 SMB 可能占用 445；Linux 的 445 可能需要端口绑定能力，本版仅提供明确错误提示，尚未包含 Linux 授权安装器。Linux GUI 需要 GTK 3，记住密码另需 libsecret 和可用 Secret Service。交叉编译通过不等于对应平台真机验收完成。
+
+## GitHub Actions 与发布
+
+[工作流](.github/workflows/ci.yml) 在 `main` 推送、PR、`v*` tag 推送和手动触发时运行。macOS、Windows、Linux 各自在 GitHub 托管 runner 上执行 `go vet`、`go test -race`、发布脚本测试和构建；普通构建的压缩包保留在 Actions Artifacts 14 天。
+
+只有推送 `v*` tag 才发布 Release，且必须等三平台全部成功。Go 工具链从 `go.mod` 读取，应用与压缩包版本以 tag 为准。普通 CI 构建使用 `VERSION-dev.<commit>`。
+
+例如要发布 `v0.1.0`，在需要发布的提交上执行：
+
+```sh
+git tag -a v0.1.0 -m "Release v0.1.0"
+git push origin v0.1.0
+```
+
+Tag 必须是带 `v` 前缀的语义版本，如 `v0.1.0` 或 `v0.2.0-rc.1`。带预发布标识的 tag 会生成 Pre-release。发布包含：
+
+- `LAN-Share-v<版本>-macOS-universal.zip`：Intel + Apple Silicon 通用应用。
+- `LAN-Share-v<版本>-Windows-amd64.zip`：Windows x64 便携包。
+- `LAN-Share-v<版本>-Linux-amd64.tar.gz`：Linux x64 便携包，保留可执行权限。
+- `SHA256SUMS.txt`：三个压缩包的 SHA-256 校验值。
+
+工作流先创建草稿，上传完整产物后再发布；失败可重跑，已公开的同名 Release 不覆盖产物。自动生成发布说明。只使用仓库自动提供的 `GITHUB_TOKEN`，发布 job 单独申请 `contents: write`，无需手动添加 PAT。Actions 固定到完整提交 SHA。
+
+macOS 包目前只有 ad-hoc 签名，未做 Apple 公证；Windows 包未做代码签名。Linux 运行依赖仍需用户系统提供。
+
+本地验证发布包与校验文件、不创建 Release：
+
+```sh
+python3 scripts/publish.py --tag v0.1.0 --directory dist --dry-run
+```
+
+该命令要求 `dist/` 中已经存在同版本的三个平台压缩包。
 
 ## 代码布局
 
