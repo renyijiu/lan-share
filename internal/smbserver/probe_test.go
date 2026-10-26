@@ -213,3 +213,42 @@ func FuzzFrameTap(f *testing.F) {
 		c.in.feed(b[mid:])
 	})
 }
+
+func TestListDirMatchesStat(t *testing.T) {
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, "子目录", "深层"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "子目录", "电影.mp4"), []byte("movie"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	linked := os.Symlink("电影.mp4", filepath.Join(root, "子目录", "链接.mp4")) == nil
+	d, err := newDisk(root, &eventLog{w: io.Discard})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer d.Close()
+	entries, err := d.ListDir("/子目录")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]uint8{"深层": 2, "电影.mp4": 1}
+	if linked {
+		want["链接.mp4"] = 1 // a link inside the share is listed as its target
+	}
+	if len(entries) != len(want) {
+		t.Fatalf("listed %d entries, want %d", len(entries), len(want))
+	}
+	for _, e := range entries {
+		if typ, ok := want[e.Name()]; !ok || e.FileType() != typ {
+			t.Fatalf("unexpected entry %q type %d", e.Name(), e.FileType())
+		}
+		st, err := d.Stat("/子目录/" + e.Name())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Inode() != e.Inode() {
+			t.Fatalf("%s: listed inode %d, stat inode %d", e.Name(), e.Inode(), st.Inode())
+		}
+	}
+}

@@ -87,3 +87,21 @@ func TestListenerHandoffAndRelease(t *testing.T) {
 }
 
 func portString(port int) string { return strconv.Itoa(port) }
+
+func TestControlPathMustBeExact(t *testing.T) {
+	for path, want := range map[string]bool{
+		"/private/tmp/lan-share-bind-123/control.sock":        true,
+		"/private/tmp/lan-share-bind-123/x/../control.sock":   false,
+		"/private/tmp/lan-share-bind-123//control.sock":       false,
+		"/private/tmp/lan-share-bind-123/./control.sock":      false,
+		"/private/tmp/../tmp/lan-share-bind-123/control.sock": false,
+		"/private/tmp/other-123/control.sock":                 false,
+		"/private/tmp/lan-share-bind-123/other.sock":          false,
+		"/tmp/lan-share-bind-123/control.sock":                false,
+		"private/tmp/lan-share-bind-123/control.sock":         false,
+	} {
+		if got := validControlPath(path); got != want {
+			t.Errorf("validControlPath(%q) = %v, want %v", path, got, want)
+		}
+	}
+}
