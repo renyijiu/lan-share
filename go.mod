@@ -7,7 +7,7 @@ require (
 	github.com/egoist/mygo v0.6.3
 	github.com/go-filesystems/interface v0.5.0
 	github.com/go-filesystems/smb v0.7.0
-	golang.org/x/sys v0.48.0
+	golang.org/x/sys v0.49.0
 )
 
 require (
