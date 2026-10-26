@@ -2,6 +2,17 @@
 
 日期：2026-10-25。构建环境：macOS 27.0.1 / Apple Silicon / Go 1.27.2。
 
+## 已测试设备
+
+下表记录实际连接过 LAN Share 或相同 SMB 库的客户端设备。欢迎通过 [设备兼容性模板](https://github.com/renyijiu/lan-share/issues/new?template=device_compat.yml) 补充，能用和不能用的结果都有价值。
+
+| 设备 | 系统 / 固件 | 客户端 | 结果 | 说明 |
+| --- | --- | --- | --- | --- |
+| 极米 NEW Z8X | Android 8.0.0 / 5.0.0.30_375 (OY122V12.15.214) | 自带资源管理器 | ✅ 画面、声音、拖动正常 | 使用相同 SMB 库的命令行探针测试；桌面版的回归测试待完成 |
+| Mac（Apple Silicon） | macOS 27.0.1 | [go-smb2](https://github.com/cloudsoda/go-smb2) 测试客户端 | ✅ 认证、枚举、校验和、随机读取正常 | 同一台 Mac 通过局域网 IP 连接 445，协商为 SMB 3.0.2 |
+
+图例：✅ 正常　⚠️ 部分可用　❌ 不可用
+
 ## 已完成
 
 | 项目 | 结果与范围 |

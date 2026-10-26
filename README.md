@@ -4,18 +4,20 @@
 [![Release](https://img.shields.io/github/v/release/renyijiu/lan-share?include_prereleases)](https://github.com/renyijiu/lan-share/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+简体中文 | [English](README.en.md)
+
 把电脑上的一个文件夹以只读 SMB 共享给局域网里的投影仪、电视盒子等设备。界面基于纯 Go 的 [MyGo](https://github.com/egoist/mygo)，SMB 服务基于 [go-filesystems/smb](https://github.com/go-filesystems/smb)，不依赖系统自带的文件共享服务。
 
-目前主要在 macOS 上开发和验证，Windows、Linux 提供可运行的构建；已测试设备和待验收范围见 [验证记录](docs/validation.md)。
+目前主要在 macOS 上开发和验证，Windows、Linux 提供可运行的构建；已测试设备和待验收范围见 [验证记录](docs/validation.md)，遇到问题请先看 [常见问题](docs/faq.md)。
 
 ## 使用
 
 1. 从 [GitHub Releases](https://github.com/renyijiu/lan-share/releases) 下载对应平台压缩包，或按下文自行构建。macOS 打开 `LAN Share.app`，Windows 打开 `lan-share.exe`，Linux 运行 `./lan-share`，选择希望共享的媒体文件夹。
-2. 设置 SMB 用户名和密码。默认用户名为 `projector`，未记住密码时每次打开应用会生成新密码；点击“显示”可查看，也可以自行输入。
+2. 设置 SMB 用户名和密码。默认用户名为 `projector`，未记住密码时每次打开应用会生成新密码；点击眼睛图标可查看，也可以自行输入。
 3. 可选“记住密码”，使用系统凭据存储。点击“保存设置”或“启动共享”时保存。
 4. 点击“启动共享”。若当前 macOS 要求 445 端口权限，会出现系统管理员授权窗口。这里输入的是 Mac 管理员密码，与投影仪使用的 SMB 密码不同。
 5. 在同一局域网的投影仪资源管理器中填写应用展示的 IP、用户名和 SMB 密码，共享名为 `Media`，端口为 `445`。
-6. 点击“停止共享”或关闭应用窗口会停止服务、断开连接并释放端口。运行期间保持电脑唤醒。
+6. 点击“停止共享”或关闭应用窗口会停止服务、断开连接并释放端口。应用不会阻止系统休眠，共享期间请保持电脑唤醒。
 
 只共享选定文件夹，投影仪只能读取；不提供写入、删除、转码或自动复制。修改共享目录或账号密码前需要停止服务。默认仅展示常见私有局域网 IPv4 地址，过滤隧道和常见虚拟网卡；网络变更后重新启动共享可刷新地址。当前使用手动 IP 接入。
 
@@ -27,7 +29,7 @@ GUI 和文件读取都以当前用户身份运行。一个独立的纯 Go 小程
 
 助手检查临时目录/控制 socket 的权限、所有者和连接进程 UID；GUI 验证对端为 root 及返回的端口。停止后应用关闭最终的监听描述符。取消或超时会关闭控制通道；助手无法联系应用时不绑定端口。
 
-当前 macOS 包使用 ad-hoc 签名，尚未做 Developer ID 签名和 Apple 公证。首次打开如被系统拦截，可在 Finder 中右键应用选择“打开”。请先把应用移到“应用程序”文件夹再使用，原因见 [安全策略](SECURITY.md#已知限制)。最低声明 macOS 13；实际运行验证以 [验证记录](docs/validation.md) 为准。
+当前 macOS 包使用 ad-hoc 签名，尚未做 Developer ID 签名和 Apple 公证。首次打开会被系统拦截：先打开一次并关闭提示，再到“系统设置 → 隐私与安全性”底部点击“仍要打开”（macOS 14 及更早也可以在 Finder 中按住 Control 点按应用选择“打开”），详见 [常见问题](docs/faq.md#macos-提示无法验证开发者或apple-无法检查其是否包含恶意软件)。请先把应用移到“应用程序”文件夹再使用，原因见 [安全策略](SECURITY.md#已知限制)。最低声明 macOS 13；实际运行验证以 [验证记录](docs/validation.md) 为准。
 
 ## 配置和日志
 
@@ -117,7 +119,7 @@ python3 scripts/publish.py --tag v0.1.0 --directory dist --dry-run
 - `cmd/port-helper`：macOS 一次性端口授权助手，不处理文件或密码。
 - `internal/preferences`：不包含密码的配置持久化。
 - `scripts`：macOS 打包、图标生成、第三方许可证收集。
-- `docs`：已通过的验证项目及尚待真机验收的范围。
+- `docs`：常见问题、已测试设备、已通过的验证项目及尚待真机验收的范围。
 - `dist`：本机生成的应用和安装包，不提交到 Git。
 
 图标为本项目生成的几何图形；本项目许可证见 `LICENSE`，第三方许可证见 `THIRD_PARTY_NOTICES.md` 和 `licenses/`。
@@ -127,6 +129,10 @@ python3 scripts/publish.py --tag v0.1.0 --directory dist --dry-run
 ```sh
 python3 scripts/collect-licenses.py
 ```
+
+## 参与贡献
+
+欢迎提交 Bug、设备兼容性反馈和 PR，详见 [CONTRIBUTING.md](CONTRIBUTING.md)。版本变更记录见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 安全
 

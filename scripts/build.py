@@ -84,7 +84,7 @@ def go_build(output, goos, arch, version, helper=False):
 def copy_notices(destination):
     shutil.copytree(ROOT / "licenses", destination / "licenses")
     shutil.copytree(ROOT / "docs", destination / "docs")
-    for name in ("LICENSE", "README.md", "THIRD_PARTY_NOTICES.md"):
+    for name in ("LICENSE", "README.md", "README.en.md", "THIRD_PARTY_NOTICES.md"):
         shutil.copy2(ROOT / name, destination / name)
 
 

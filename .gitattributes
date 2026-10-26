@@ -1,0 +1,10 @@
+# Keep LF everywhere, including Windows checkouts, so gofmt and the
+# license notice check see the same bytes on every platform.
+* text=auto eol=lf
+
+*.icns binary
+*.png binary
+
+# Copied third-party license texts are not project documentation.
+licenses/** linguist-vendored
+THIRD_PARTY_NOTICES.md linguist-generated
