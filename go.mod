@@ -1,4 +1,4 @@
-module local/lan-share
+module github.com/renyijiu/lan-share
 
 go 1.27.2
 

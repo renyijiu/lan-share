@@ -10,7 +10,7 @@ import (
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
-	"local/lan-share/internal/smbserver"
+	"github.com/renyijiu/lan-share/internal/smbserver"
 )
 
 // palette holds the colors the theme has no slot for: the cards on the

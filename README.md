@@ -1,6 +1,12 @@
 # LAN Share
 
-MyGo 纯 Go UI 的跨平台 SMB 桌面工具。首版面向 macOS，复用已在极米 NEW Z8X 自带资源管理器验证过的 `go-filesystems/smb v0.7.0`。不依赖 macOS 文件共享服务。
+[![CI](https://github.com/renyijiu/lan-share/actions/workflows/ci.yml/badge.svg)](https://github.com/renyijiu/lan-share/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/renyijiu/lan-share?include_prereleases)](https://github.com/renyijiu/lan-share/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+把电脑上的一个文件夹以只读 SMB 共享给局域网里的投影仪、电视盒子等设备。界面基于纯 Go 的 [MyGo](https://github.com/egoist/mygo)，SMB 服务基于 [go-filesystems/smb](https://github.com/go-filesystems/smb)，不依赖系统自带的文件共享服务。
+
+目前主要在 macOS 上开发和验证，Windows、Linux 提供可运行的构建；已测试设备和待验收范围见 [验证记录](docs/validation.md)。
 
 ## 使用
 
@@ -21,7 +27,7 @@ GUI 和文件读取都以当前用户身份运行。一个独立的纯 Go 小程
 
 助手检查临时目录/控制 socket 的权限、所有者和连接进程 UID；GUI 验证对端为 root 及返回的端口。停止后应用关闭最终的监听描述符。取消或超时会关闭控制通道；助手无法联系应用时不绑定端口。
 
-这是本地测试版，使用 ad-hoc 签名，尚未做 Developer ID 签名和 Apple 公证。最低声明 macOS 13；实际运行验证以 [验证记录](docs/validation.md) 为准。
+当前 macOS 包使用 ad-hoc 签名，尚未做 Developer ID 签名和 Apple 公证。首次打开如被系统拦截，可在 Finder 中右键应用选择“打开”。请先把应用移到“应用程序”文件夹再使用，原因见 [安全策略](SECURITY.md#已知限制)。最低声明 macOS 13；实际运行验证以 [验证记录](docs/validation.md) 为准。
 
 ## 配置和日志
 
@@ -73,9 +79,9 @@ Windows 的系统 SMB 可能占用 445；Linux 的 445 可能需要端口绑定�
 
 ## GitHub Actions 与发布
 
-[工作流](.github/workflows/ci.yml) 在 `main` 推送、PR、`v*` tag 推送和手动触发时运行。macOS、Windows、Linux 各自在 GitHub 托管 runner 上执行 `go vet`、`go test -race`、发布脚本测试和构建；普通构建的压缩包保留在 Actions Artifacts 14 天。
+[工作流](.github/workflows/ci.yml) 在 `main` 推送、PR、`v*` tag 推送和手动触发时运行。检查 job 执行 `gofmt`、`go mod tidy -diff`、按三个目标系统运行的 staticcheck、govulncheck，并确认第三方许可证清单与依赖一致。macOS、Windows、Linux 各自在 GitHub 托管 runner 上执行 `go vet`、`go test -race`、发布脚本测试和构建；普通构建的压缩包保留在 Actions Artifacts 14 天。Dependabot 每周检查 Go 依赖和 Actions 更新；升级依赖的 PR 需要重新生成许可证清单才能通过检查。
 
-只有推送 `v*` tag 才发布 Release，且必须等三平台全部成功。Go 工具链从 `go.mod` 读取，应用与压缩包版本以 tag 为准。普通 CI 构建使用 `VERSION-dev.<commit>`。
+只有推送 `v*` tag 才发布 Release，且必须等检查和三平台构建全部成功。Go 工具链从 `go.mod` 读取，应用与压缩包版本以 tag 为准。普通 CI 构建使用 `VERSION-dev.<commit>`。
 
 例如要发布 `v0.1.0`，在需要发布的提交上执行：
 
@@ -114,11 +120,18 @@ python3 scripts/publish.py --tag v0.1.0 --directory dist --dry-run
 - `docs`：已通过的验证项目及尚待真机验收的范围。
 - `dist`：本机生成的应用和安装包，不提交到 Git。
 
-图标为本项目生成的几何图形；第三方许可证见 `THIRD_PARTY_NOTICES.md` 和 `licenses/`。
+图标为本项目生成的几何图形；本项目许可证见 `LICENSE`，第三方许可证见 `THIRD_PARTY_NOTICES.md` 和 `licenses/`。
 
-更新第三方许可证清单（需要 Python 3）：
+更新第三方许可证清单（需要 Python 3）。脚本会下载完整模块图、重新生成 `licenses/`，并保持 `go.sum` 整洁：
 
 ```sh
-go mod download all
 python3 scripts/collect-licenses.py
 ```
+
+## 安全
+
+请不要在公开 Issue 中报告漏洞，提交方式和已知限制见 [SECURITY.md](SECURITY.md)。
+
+## 许可证
+
+本项目以 [MIT 许可证](LICENSE) 发布。第三方依赖的许可证见 `THIRD_PARTY_NOTICES.md` 和 `licenses/`。

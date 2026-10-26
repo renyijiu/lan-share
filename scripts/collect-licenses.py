@@ -4,7 +4,14 @@ import pathlib
 import subprocess
 
 root = pathlib.Path(__file__).resolve().parents[1]
-data = subprocess.check_output(["go", "list", "-m", "-json", "all"], cwd=root, text=True)
+# Downloading the whole module graph adds hashes that go mod tidy removes again.
+go_sum = root / "go.sum"
+tidy = go_sum.read_bytes()
+try:
+    subprocess.run(["go", "mod", "download", "all"], cwd=root, check=True)
+    data = subprocess.check_output(["go", "list", "-m", "-json", "all"], cwd=root, text=True)
+finally:
+    go_sum.write_bytes(tidy)
 decoder = json.JSONDecoder()
 modules = []
 while data.strip():
@@ -15,6 +22,10 @@ while data.strip():
         modules.append(module)
 
 dest = root / "licenses"
+# Start empty so licenses of dropped or upgraded modules do not linger.
+if dest.exists():
+    for stale in dest.iterdir():
+        stale.unlink()
 dest.mkdir(exist_ok=True)
 notice = ["Third-party notices", "", "Pinned dependencies, including test-only dependencies. Original license text is included below this directory.", ""]
 for module in modules:
