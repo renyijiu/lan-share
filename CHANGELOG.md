@@ -4,11 +4,13 @@
 
 ## [Unreleased]
 
-首个公开版本，计划发布为 0.1.0。
+## [0.1.0] - 2026-10-26
+
+首个公开版本。
 
 ### 新增
 
-- 把选定文件夹以只读 SMB 共享（共享名 `Media`，端口 445）提供给局域网中的投影仪等设备，支持 SMB 2/3。
+- 把选定文件夹以只读 SMB 共享（共享名 `Media`，端口 445）提供给局域网中的投影仪等设备，支持 SMB 2.0.2 至 3.1.1。
 - 用户名和密码认证。默认用户名为 `projector`，未记住密码时每次打开应用会生成随机密码。
 - “记住密码”，保存在系统凭据存储中（Keychain / Credential Manager / Secret Service）。
 - 列出本机的局域网 IPv4 地址，可一键复制。
@@ -26,4 +28,5 @@
 
 - 应用标识改为 `io.github.renyijiu.lanshare`。用之前的预览构建保存过密码的，需要重新输入一次。
 
-[Unreleased]: https://github.com/renyijiu/lan-share/commits/main
+[Unreleased]: https://github.com/renyijiu/lan-share/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/renyijiu/lan-share/releases/tag/v0.1.0
