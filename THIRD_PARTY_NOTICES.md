@@ -1,44 +1,44 @@
 Third-party notices
 
-Pinned dependencies, including test-only dependencies. Original license text is included below this directory.
+Dependencies, including test-only dependencies. Versions are pinned in go.mod; original license text is included in the licenses directory.
 
-- github.com/cloudsoda/go-smb2 v0.0.0-20260803221621-0b399b9d036c
-- github.com/cloudsoda/sddl v0.0.0-20250224235906-926454e91efc
-- github.com/davecgh/go-spew v1.1.1
-- github.com/ebitengine/purego v0.11.1
-- github.com/egoist/mygo v0.6.3
-- github.com/geoffgarside/ber v1.1.0
-- github.com/go-filesystems/hostcopy v0.1.0
-- github.com/go-filesystems/interface v0.5.0
-- github.com/go-filesystems/smb v0.7.0
-- github.com/go-text/typesetting v0.3.5
-- github.com/go-text/typesetting-utils v0.0.0-20260419141703-4ffe8874dabc
-- github.com/gorilla/securecookie v1.1.1
-- github.com/gorilla/sessions v1.2.1
-- github.com/hajimehoshi/go-mp3 v0.3.4
-- github.com/hashicorp/go-uuid v1.0.3
-- github.com/jcmturner/aescts/v2 v2.0.0
-- github.com/jcmturner/dnsutils/v2 v2.0.0
-- github.com/jcmturner/gofork v1.7.6
-- github.com/jcmturner/goidentity/v6 v6.0.1
-- github.com/jcmturner/gokrb5/v8 v8.4.4
-- github.com/jcmturner/rpc/v2 v2.0.3
-- github.com/jfreymuth/oggvorbis v1.0.5
-- github.com/jfreymuth/vorbis v1.0.2
-- github.com/pmezard/go-difflib v1.0.0
-- github.com/stretchr/objx v0.5.0
-- github.com/stretchr/testify v1.8.3
-- github.com/yuin/goldmark v1.4.13
-- golang.org/x/crypto v0.57.0
-- golang.org/x/image v0.46.0
-- golang.org/x/mod v0.41.0
-- golang.org/x/net v0.59.0
-- golang.org/x/sync v0.24.0
-- golang.org/x/sys v0.48.0
-- golang.org/x/term v0.46.0
-- golang.org/x/text v0.43.0
-- golang.org/x/tools v0.51.0
-- golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
-- gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405
-- gopkg.in/yaml.v2 v2.2.2
-- gopkg.in/yaml.v3 v3.0.1
+- github.com/cloudsoda/go-smb2
+- github.com/cloudsoda/sddl
+- github.com/davecgh/go-spew
+- github.com/ebitengine/purego
+- github.com/egoist/mygo
+- github.com/geoffgarside/ber
+- github.com/go-filesystems/hostcopy
+- github.com/go-filesystems/interface
+- github.com/go-filesystems/smb
+- github.com/go-text/typesetting
+- github.com/go-text/typesetting-utils
+- github.com/gorilla/securecookie
+- github.com/gorilla/sessions
+- github.com/hajimehoshi/go-mp3
+- github.com/hashicorp/go-uuid
+- github.com/jcmturner/aescts/v2
+- github.com/jcmturner/dnsutils/v2
+- github.com/jcmturner/gofork
+- github.com/jcmturner/goidentity/v6
+- github.com/jcmturner/gokrb5/v8
+- github.com/jcmturner/rpc/v2
+- github.com/jfreymuth/oggvorbis
+- github.com/jfreymuth/vorbis
+- github.com/pmezard/go-difflib
+- github.com/stretchr/objx
+- github.com/stretchr/testify
+- github.com/yuin/goldmark
+- golang.org/x/crypto
+- golang.org/x/image
+- golang.org/x/mod
+- golang.org/x/net
+- golang.org/x/sync
+- golang.org/x/sys
+- golang.org/x/term
+- golang.org/x/text
+- golang.org/x/tools
+- golang.org/x/xerrors
+- gopkg.in/check.v1
+- gopkg.in/yaml.v2
+- gopkg.in/yaml.v3
