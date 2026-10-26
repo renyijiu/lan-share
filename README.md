@@ -79,7 +79,7 @@ Windows 的系统 SMB 可能占用 445；Linux 的 445 可能需要端口绑定�
 
 ## GitHub Actions 与发布
 
-[工作流](.github/workflows/ci.yml) 在 `main` 推送、PR、`v*` tag 推送和手动触发时运行。检查 job 执行 `gofmt`、`go mod tidy -diff`、按三个目标系统运行的 staticcheck、govulncheck，并确认第三方许可证清单与依赖一致。macOS、Windows、Linux 各自在 GitHub 托管 runner 上执行 `go vet`、`go test -race`、发布脚本测试和构建；普通构建的压缩包保留在 Actions Artifacts 14 天。Dependabot 每周检查 Go 依赖和 Actions 更新；升级依赖的 PR 需要重新生成许可证清单才能通过检查。
+[工作流](.github/workflows/ci.yml) 在 `main` 推送、PR、`v*` tag 推送和手动触发时运行。检查 job 执行 `gofmt`、`go mod tidy -diff`、按三个目标系统运行的 staticcheck、govulncheck，并确认第三方许可证清单与依赖一致。macOS、Windows、Linux 各自在 GitHub 托管 runner 上执行 `go vet`、`go test -race`、发布脚本测试和构建；普通构建的压缩包保留在 Actions Artifacts 14 天。Dependabot 每周检查 Go 依赖和 Actions 更新。许可证清单不记录版本号（版本以 `go.mod` 为准），普通升级无需改动；新增或移除依赖、或依赖的许可证文本变化时，需要重新生成清单才能通过检查。
 
 只有推送 `v*` tag 才发布 Release，且必须等检查和三平台构建全部成功。Go 工具链从 `go.mod` 读取，应用与压缩包版本以 tag 为准。普通 CI 构建使用 `VERSION-dev.<commit>`。
 

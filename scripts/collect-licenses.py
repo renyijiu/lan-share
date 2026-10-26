@@ -1,4 +1,8 @@
-"""Collect licenses of all pinned modules, including the test-only SMB client."""
+"""Collect licenses of all pinned modules, including the test-only SMB client.
+
+Output names omit versions, which go.mod already records, so a dependency
+upgrade only changes these files when the license text itself changes.
+"""
 import json
 import pathlib
 import subprocess
@@ -27,15 +31,15 @@ if dest.exists():
     for stale in dest.iterdir():
         stale.unlink()
 dest.mkdir(exist_ok=True)
-notice = ["Third-party notices", "", "Pinned dependencies, including test-only dependencies. Original license text is included below this directory.", ""]
+notice = ["Third-party notices", "", "Dependencies, including test-only dependencies. Versions are pinned in go.mod; original license text is included in the licenses directory.", ""]
 for module in modules:
     source = pathlib.Path(module.get("Dir", ""))
     files = [p for p in source.iterdir() if p.is_file() and p.name.upper().startswith(("LICENSE", "COPYING", "NOTICE"))] if module.get("Dir") else []
     if not files:
         raise RuntimeError("Missing license for " + module["Path"])
-    name = module["Path"].replace("/", "_") + "@" + module["Version"]
+    name = module["Path"].replace("/", "_")
     for item in files:
         (dest / (name + "_" + item.name + ".txt")).write_bytes(item.read_bytes())
-    notice.append("- " + module["Path"] + " " + module["Version"])
+    notice.append("- " + module["Path"])
 (root / "THIRD_PARTY_NOTICES.md").write_text("\n".join(notice) + "\n")
 print("Collected licenses for", len(modules), "modules")
