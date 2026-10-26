@@ -1,0 +1,62 @@
+name: 设备兼容性反馈 / Device compatibility
+description: 告诉我们某台投影仪、电视盒子或播放器能否正常使用。Report whether a projector, TV box or player works.
+labels: [compatibility]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        能用和不能用的结果都很有价值，会整理进 [已测试设备](https://github.com/renyijiu/lan-share/blob/main/docs/validation.md#已测试设备)。
+        Both working and failing results help; they are collected in the tested devices table.
+  - type: input
+    id: device
+    attributes:
+      label: 设备品牌型号 / Device
+      placeholder: 极米 NEW Z8X
+    validations:
+      required: true
+  - type: input
+    id: device-os
+    attributes:
+      label: 设备系统与固件版本 / Device OS and firmware
+      placeholder: Android 8.0.0 / 5.0.0.30_375
+  - type: input
+    id: client-app
+    attributes:
+      label: 使用的客户端应用 / Client app
+      description: 设备自带的文件管理器，或 Kodi、VLC、Nova 等播放器。
+      placeholder: 自带资源管理器
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: 结果 / Result
+      options:
+        - 一切正常 / Everything works
+        - 部分可用 / Partly works
+        - 无法连接或无法播放 / Does not work
+    validations:
+      required: true
+  - type: checkboxes
+    id: tested
+    attributes:
+      label: 已验证的功能 / What worked
+      options:
+        - label: 连接并登录 / Connect and sign in
+        - label: 浏览文件夹 / Browse folders
+        - label: 播放视频（画面和声音）/ Play video with sound
+        - label: 拖动进度 / Seek
+        - label: 中文文件名正常显示 / Chinese file names display correctly
+        - label: 长时间暂停后能继续播放 / Resume after a long pause
+  - type: input
+    id: app-version
+    attributes:
+      label: LAN Share 版本与电脑系统 / LAN Share version and computer OS
+      placeholder: v0.1.0 / macOS 15.1
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: 补充说明 / Notes
+      description: 不能用时，请写明错误提示，并附上诊断日志中的相关部分（附上前请检查，日志包含局域网 IP）。

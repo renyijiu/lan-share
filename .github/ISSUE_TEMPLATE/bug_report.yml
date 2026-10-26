@@ -1,0 +1,73 @@
+name: Bug 报告 / Bug report
+description: 应用出错、崩溃或行为与说明不符。Something is broken or behaves unlike the docs.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提交前请先看 [常见问题](https://github.com/renyijiu/lan-share/blob/main/docs/faq.md)，并搜索已有 Issue。安全漏洞请按 [SECURITY.md](https://github.com/renyijiu/lan-share/blob/main/SECURITY.md) 私下报告。
+        Please check the FAQ and existing issues first. Report security issues privately as described in SECURITY.md.
+  - type: input
+    id: version
+    attributes:
+      label: 应用版本 / App version
+      description: 窗口底部显示的版本号，或运行 `lan-share --version`。
+      placeholder: v0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: 电脑系统 / Operating system
+      options:
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Windows
+        - Linux
+    validations:
+      required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: 系统版本 / OS version
+      placeholder: macOS 15.1 / Windows 11 24H2 / Ubuntu 24.04
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: 连接设备 / Client device
+      description: 投影仪或播放器的品牌型号、系统版本，以及使用的文件管理器或播放器应用。与连接无关的问题可填“无”。
+      placeholder: 极米 NEW Z8X / Android 8.0.0 / 自带资源管理器
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 问题描述 / What happened
+      description: 你看到了什么，期望看到什么。界面上的错误提示请原样复制。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤 / Steps to reproduce
+      placeholder: |
+        1. 选择文件夹……
+        2. 点击“启动共享”……
+        3. 在投影仪上……
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 诊断日志 / Diagnostic log
+      description: |
+        点击应用里的“诊断日志”打开日志文件夹，附上 `service.jsonl` 中的相关部分。日志不含密码、文件内容和文件名，但包含局域网 IP，附上前请先检查。
+        Click "诊断日志" in the app to open the log folder. Logs contain no passwords, file contents or file names, but do include LAN IP addresses.
+      render: json
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 确认 / Checks
+      options:
+        - label: 我已阅读常见问题，并搜索过已有 Issue。I have read the FAQ and searched existing issues.
+          required: true

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 报告安全漏洞 / Report a security vulnerability
+    url: https://github.com/renyijiu/lan-share/security/advisories/new
+    about: 请私下报告，不要公开提交 Issue。Please report privately instead of opening a public issue.
+  - name: 常见问题 / FAQ
+    url: https://github.com/renyijiu/lan-share/blob/main/docs/faq.md
+    about: 连接不上、445 端口被占用、无法打开应用等常见问题。Connection, port 445 and launch problems.
