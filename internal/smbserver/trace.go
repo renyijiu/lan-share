@@ -335,7 +335,7 @@ func (c *traceConn) observeSMB2(p []byte, response bool) {
 				parts := strings.Split(strings.TrimRight(s, "\\"), "\\")
 				if len(parts) > 0 {
 					last := parts[len(parts)-1]
-					if strings.EqualFold(last, "Media") || strings.EqualFold(last, "IPC$") {
+					if strings.EqualFold(last, ShareName) || strings.EqualFold(last, "IPC$") {
 						e["share"] = last
 					} else {
 						e["share_id"] = pathID(last)

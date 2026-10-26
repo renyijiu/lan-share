@@ -1,6 +1,8 @@
 package smbserver
 
 import (
+	"crypto/hmac"
+	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
 	"io"
@@ -52,7 +54,19 @@ func localName(p string) (string, error) {
 	return p, nil
 }
 
-func pathID(p string) string { h := sha256.Sum256([]byte(p)); return fmt.Sprintf("%x", h[:6]) }
+// pathKey makes logged path IDs unguessable from common names and unlinkable
+// across launches, while one launch still correlates reads of the same file.
+var pathKey = func() []byte {
+	k := make([]byte, 32)
+	rand.Read(k)
+	return k
+}()
+
+func pathID(p string) string {
+	m := hmac.New(sha256.New, pathKey)
+	m.Write([]byte(p))
+	return fmt.Sprintf("%x", m.Sum(nil)[:6])
+}
 func (d *disk) Close() error {
 	d.mu.Lock()
 	d.closed = true
@@ -76,7 +90,7 @@ func (d *disk) Stat(p string) (filesystem.Stat, error) {
 	} else if !i.Mode().IsRegular() {
 		return nil, fs.ErrPermission
 	}
-	return filesystem.NewStat(mode, uint64(i.Size()), inode(p)), nil
+	return filesystem.NewStat(mode, uint64(i.Size()), inode(n)), nil
 }
 func inode(p string) uint64 {
 	h := sha256.Sum256([]byte(p))
@@ -103,14 +117,20 @@ func (d *disk) ListDir(p string) ([]filesystem.DirEntry, error) {
 	result := make([]filesystem.DirEntry, 0, len(entries))
 	for _, e := range entries {
 		child := filepath.Join(n, e.Name())
-		i, err := d.root.Stat(child)
-		if err != nil {
-			continue
-		} // Includes symlinks outside Root.
+		// The SMB server stats every entry it lists, so only links need
+		// resolving here. Root refuses the ones that point outside the share.
+		mode := e.Type()
+		if mode&fs.ModeSymlink != 0 {
+			i, err := d.root.Stat(child)
+			if err != nil {
+				continue
+			}
+			mode = i.Mode().Type()
+		}
 		var typ uint8 = 1 // Linux dirent type used by the filesystem interface.
-		if i.IsDir() {
+		if mode.IsDir() {
 			typ = 2
-		} else if !i.Mode().IsRegular() {
+		} else if !mode.IsRegular() {
 			continue
 		}
 		result = append(result, filesystem.NewDirEntry(inode(child), e.Name(), typ))

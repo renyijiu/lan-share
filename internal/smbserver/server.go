@@ -268,7 +268,6 @@ func (l *eventLog) event(kind string, fields map[string]any) {
 type traceListener struct {
 	net.Listener
 	log      *eventLog
-	allowed  net.IP
 	slots    chan struct{}
 	next     atomic.Uint64
 	active   atomic.Int64
@@ -286,11 +285,6 @@ func (l *traceListener) Accept() (net.Conn, error) {
 		conn, err := l.Listener.Accept()
 		if err != nil {
 			return nil, err
-		}
-		host, _, _ := net.SplitHostPort(conn.RemoteAddr().String())
-		if l.allowed != nil && !l.allowed.Equal(net.ParseIP(host)) {
-			conn.Close()
-			continue
 		}
 		select {
 		case l.slots <- struct{}{}:

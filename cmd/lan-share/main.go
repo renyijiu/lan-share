@@ -53,12 +53,13 @@ func main() {
 		return
 	}
 	dir, err := preferences.Directory()
-	if err != nil {
-		log.Fatal(err)
+	var logger *smbserver.LogFile
+	if err == nil {
+		logger, err = smbserver.OpenLog(filepath.Join(dir, "logs"))
 	}
-	logger, err := smbserver.OpenLog(filepath.Join(dir, "logs"))
 	if err != nil {
-		log.Fatal(err)
+		startupFailed(err)
+		return
 	}
 	defer logger.Close()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -101,6 +102,21 @@ func main() {
 	})
 	mygo.App.OnWindowAllClosed(func() { mygo.App.Quit() })
 	if err = mygo.App.Run(); err != nil {
+		log.Print(err)
+	}
+}
+
+// startupFailed explains why the app cannot start. An app opened from the
+// Finder or Explorer has no terminal, so a log message alone is never seen.
+func startupFailed(err error) {
+	log.Print(err)
+	mygo.App.WhenReady(func() {
+		go func() {
+			mygo.Dialog.Error("LAN Share 无法启动", "无法创建应用配置或日志目录，请检查用户目录的写入权限。\n\n"+err.Error())
+			mygo.App.Quit()
+		}()
+	})
+	if err := mygo.App.Run(); err != nil {
 		log.Print(err)
 	}
 }

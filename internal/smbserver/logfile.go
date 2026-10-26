@@ -42,23 +42,32 @@ func (l *LogFile) Write(p []byte) (int, error) {
 	if l.size+int64(len(p)) > 1<<20 {
 		l.file.Close()
 		l.file = nil
-		_ = os.Remove(filepath.Join(l.dir, "service.2.jsonl"))
-		for i := 1; i >= 0; i-- {
-			src := "service.jsonl"
-			if i > 0 {
-				src = fmt.Sprintf("service.%d.jsonl", i)
-			}
-			if err := os.Rename(filepath.Join(l.dir, src), filepath.Join(l.dir, fmt.Sprintf("service.%d.jsonl", i+1))); err != nil && !os.IsNotExist(err) {
-				return 0, err
-			}
-		}
+		rotated := l.rotate()
 		if err := l.open(); err != nil {
 			return 0, err
+		}
+		if rotated != nil {
+			// Keep appending to the current file and retry after another MiB,
+			// rather than losing every later diagnostic.
+			l.size = 0
 		}
 	}
 	n, err := l.file.Write(p)
 	l.size += int64(n)
 	return n, err
+}
+func (l *LogFile) rotate() error {
+	_ = os.Remove(filepath.Join(l.dir, "service.2.jsonl"))
+	for i := 1; i >= 0; i-- {
+		src := "service.jsonl"
+		if i > 0 {
+			src = fmt.Sprintf("service.%d.jsonl", i)
+		}
+		if err := os.Rename(filepath.Join(l.dir, src), filepath.Join(l.dir, fmt.Sprintf("service.%d.jsonl", i+1))); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+	}
+	return nil
 }
 func (l *LogFile) Close() error {
 	l.mu.Lock()

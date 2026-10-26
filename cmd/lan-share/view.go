@@ -249,7 +249,7 @@ func (a *application) view(c *ui.Context) {
 				a.ticket(c, p, s)
 				a.notice(c)
 			})
-			section(c, "共享文件夹", "以共享名 Media 只读共享，投影仪只能浏览和播放，无法修改或删除文件。", func() {
+			section(c, "共享文件夹", "以共享名 "+smbserver.ShareName+" 只读共享，投影仪只能浏览和播放，无法修改或删除文件。", func() {
 				a.folderCard(c, p, s.locked)
 			})
 			section(c, "登录信息", "投影仪连接时填写这组用户名和密码。记住密码后，密码保存在系统凭据存储中。", func() {
@@ -307,7 +307,7 @@ func (a *application) ticket(c *ui.Context, p palette, s shareState) {
 						})
 					}
 				})
-				stub(c, "共享名", 1, func() { stubValue(c, "Media") })
+				stub(c, "共享名", 1, func() { stubValue(c, smbserver.ShareName) })
 				stub(c, "用户名", 1.1, func() {
 					name := a.settings.Username
 					if name == "" {

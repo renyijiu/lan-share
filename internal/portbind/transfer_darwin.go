@@ -32,16 +32,24 @@ func peerUID(c *net.UnixConn) (uint32, error) {
 	return uid, inner
 }
 
+// validControlPath accepts only the socket privilegedListen creates. The path
+// must already be clean, so the checks apply to the exact path that is opened.
+func validControlPath(socket string) bool {
+	parent := filepath.Dir(socket)
+	return socket == filepath.Clean(socket) && filepath.Dir(parent) == "/private/tmp" &&
+		strings.HasPrefix(filepath.Base(parent), "lan-share-bind-") && filepath.Base(socket) == "control.sock"
+}
+
 // RunHelper is deliberately limited to one socket handoff, with no filesystem,
 // password, command execution, or persistent installation functionality.
 func RunHelper(socket string, uid int) error {
 	if os.Geteuid() != 0 || uid <= 0 {
 		return errors.New("helper requires a non-root recipient and administrator authorization")
 	}
-	parent := filepath.Dir(socket)
-	if filepath.Dir(parent) != "/private/tmp" || !strings.HasPrefix(filepath.Base(parent), "lan-share-bind-") || filepath.Base(socket) != "control.sock" {
+	if !validControlPath(socket) {
 		return errors.New("invalid control path")
 	}
+	parent := filepath.Dir(socket)
 	info, err := os.Lstat(parent)
 	if err != nil {
 		return err
