@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/egoist/mygo/ui"
-	"local/lan-share/internal/preferences"
-	"local/lan-share/internal/smbserver"
+	"github.com/renyijiu/lan-share/internal/preferences"
+	"github.com/renyijiu/lan-share/internal/smbserver"
 	"testing"
 )
 

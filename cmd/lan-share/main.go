@@ -13,9 +13,9 @@ import (
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
-	"local/lan-share/internal/portbind"
-	"local/lan-share/internal/preferences"
-	"local/lan-share/internal/smbserver"
+	"github.com/renyijiu/lan-share/internal/portbind"
+	"github.com/renyijiu/lan-share/internal/preferences"
+	"github.com/renyijiu/lan-share/internal/smbserver"
 )
 
 // Production builds set this from VERSION or the release tag with -ldflags.
@@ -63,7 +63,7 @@ func main() {
 	defer logger.Close()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	service := "dev.lanshare.desktop"
+	service := "io.github.renyijiu.lanshare"
 	if os.Getenv("LAN_SHARE_DATA_DIR") != "" {
 		sum := sha256.Sum256([]byte(dir))
 		service += ".test-" + hex.EncodeToString(sum[:6])

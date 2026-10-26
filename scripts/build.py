@@ -72,7 +72,7 @@ def go_build(output, goos, arch, version, helper=False):
     if not helper:
         flags += (" -X main.version=" + version
                   + " -X github.com/egoist/mygo.production=1"
-                  + " -X github.com/egoist/mygo.packageIdentifier=dev.lanshare.desktop"
+                  + " -X github.com/egoist/mygo.packageIdentifier=io.github.renyijiu.lanshare"
                   + " -X github.com/egoist/mygo.packageVersion=" + version)
         if goos == "windows":
             flags += " -H=windowsgui"
@@ -84,7 +84,7 @@ def go_build(output, goos, arch, version, helper=False):
 def copy_notices(destination):
     shutil.copytree(ROOT / "licenses", destination / "licenses")
     shutil.copytree(ROOT / "docs", destination / "docs")
-    for name in ("README.md", "THIRD_PARTY_NOTICES.md"):
+    for name in ("LICENSE", "README.md", "THIRD_PARTY_NOTICES.md"):
         shutil.copy2(ROOT / name, destination / name)
 
 

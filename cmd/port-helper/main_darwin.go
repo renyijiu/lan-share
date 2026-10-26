@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"local/lan-share/internal/portbind"
+	"github.com/renyijiu/lan-share/internal/portbind"
 	"os"
 )
 

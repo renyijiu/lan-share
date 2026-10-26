@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-  <key>CFBundleIdentifier</key><string>dev.lanshare.desktop</string>
+  <key>CFBundleIdentifier</key><string>io.github.renyijiu.lanshare</string>
   <key>CFBundleExecutable</key><string>lan-share</string>
   <key>CFBundleName</key><string>LAN Share</string>
   <key>CFBundleDisplayName</key><string>LAN Share</string>
