@@ -1,10 +1,10 @@
 module github.com/renyijiu/lan-share
 
-go 1.27.2
+go 1.27.3
 
 require (
 	github.com/cloudsoda/go-smb2 v0.0.0-20260803221621-0b399b9d036c
-	github.com/egoist/mygo v0.6.3
+	github.com/egoist/mygo v0.7.3
 	github.com/go-filesystems/interface v0.5.0
 	github.com/go-filesystems/smb v0.7.0
 	golang.org/x/sys v0.49.0
