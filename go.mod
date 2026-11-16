@@ -1,20 +1,21 @@
 module github.com/renyijiu/lan-share
 
-go 1.27.2
+go 1.27.3
 
 require (
-	github.com/cloudsoda/go-smb2 v0.0.0-20260803221621-0b399b9d036c
-	github.com/egoist/mygo v0.6.3
-	github.com/go-filesystems/interface v0.5.0
-	github.com/go-filesystems/smb v0.7.0
-	golang.org/x/sys v0.49.0
+	github.com/cloudsoda/go-smb2 v0.0.0-20261105190815-95be04a983b8
+	github.com/egoist/mygo v0.9.0
+	github.com/go-filesystems/interface v0.6.0
+	github.com/go-filesystems/smb v0.10.0
+	golang.org/x/sys v0.50.0
 )
 
 require (
-	github.com/cloudsoda/sddl v0.0.0-20250224235906-926454e91efc // indirect
+	github.com/cloudsoda/sddl v0.0.0-20261105185302-1c8f96799263 // indirect
 	github.com/ebitengine/purego v0.11.1 // indirect
 	github.com/geoffgarside/ber v1.1.0 // indirect
 	github.com/go-filesystems/hostcopy v0.1.0 // indirect
+	github.com/go-filesystems/inflight v0.2.0 // indirect
 	github.com/go-text/typesetting v0.3.5 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
